@@ -147,23 +147,24 @@ public class Fecha
      * Computa distancia en días entre dos fechas.
      * El parámetro otraFecha debe corresponder a una fecha igual o 
      * posterior a la fecha del objeto.
+     * Precondición: La fecha del parámetro debe ser mayor a la del objeto.
      */
     public int cantidad(Fecha otraFecha) {
-        assert(esAnterior(otraFecha)): "La fecha del parámetro debe ser mayor a la del objeto.";
-       
+        if(!(esAnterior(otraFecha))) throw new IllegalStateException("La fecha del parámetro debe ser mayor a la del objeto.");
+        int anhoActual = anho;
         //Conversiones a días:
         int fechaMesEnDias = 0;
         int fechaAnhoEnDias = 0;
         int otraFechaMesEnDias = 0;
         int otraFechaAnhoEnDias = 0;
         // Conversión a días de la fecha actual:
-        if(esBisiesto(anho)) {
-            fechaAnhoEnDias = anho * 366;
-        }
-        else {
-            fechaAnhoEnDias = anho * 365;
-        }
-        
+        for(int i = 1582; i < anhoActual; i++)
+            if(esBisiesto(anho)) {
+                fechaAnhoEnDias += 366;
+            }
+            else {
+                fechaAnhoEnDias += 365;
+            }
         if(mes == 2){
             if(esBisiesto(anho)){
                 fechaMesEnDias = 29;
