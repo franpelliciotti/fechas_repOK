@@ -39,19 +39,19 @@ public class Fecha
      * fechas válidas, en relación a número de días en los
      * meses, años bisiestos, etc.
      * Precondición: Que la fecha sea válida.
-     * Postcondición: La fecha se crea.
+     * Postcondición: true.
      */
     public Fecha(int nuevoDia, int nuevoMes, int nuevoAnho)
     {
-        if (!(diaValido(nuevoDia, nuevoMes, nuevoAnho))) throw new IllegalArgumentException("La fecha no es válida.");
+        if (!diaValido(nuevoDia, nuevoMes, nuevoAnho)) throw new IllegalArgumentException("La fecha no es válida.");
         dia = nuevoDia;
         mes = nuevoMes;
         anho = nuevoAnho;
         assert repOK(): "No se preserva el invariante de clase.";
     }
     
-    public String toString(Fecha fecha){
-        return fecha.obtenerDia() + "/" + fecha.obtenerMes() + "/" + fecha.obtenerAnho();
+    public String toString(){
+        return "" + obtenerDia() + "/" + obtenerMes() + "/" + obtenerAnho();
     }
     
     /**
@@ -81,7 +81,7 @@ public class Fecha
      * Precondición: Que el día sea válido según la fecha.
     */
     public void cambiarDia(int nuevoDia, int nuevoMes, int nuevoAnho) {
-        assert(diaValido(nuevoDia, nuevoMes, nuevoAnho));
+        if(!diaValido(nuevoDia, nuevoMes, nuevoAnho)) throw new IllegalArgumentException("La fecha no es válida");
         nuevoDia = dia;
         assert repOK(): "No se preserva el invariante de clase.";
     }
@@ -230,8 +230,8 @@ public class Fecha
      */
     private int cantidadDias(int unMes, int unAnho) 
     {
-        // Implementar este método, reemplazando la línea siguiente
-        assert(unMes >= 1 && unMes <= 12): "El mes debe estar entre 1 y 12.";
+        if(unAnho < 1582) throw new IllegalArgumentException("El año debe ser mayor a 1582");
+        
         if (unMes == 2)
         {
             if (unMes == 2 && esBisiesto(unAnho) == true)
@@ -259,19 +259,19 @@ public class Fecha
      * si es múltiplo de 4, salvo los múltiplos de 100 que no son 
      * múltiplos de 400.
      * El parámetro debe corresponder a un año válido.
+     * (Saqué el límite de año mayor o igual a 1582).
      */
     private boolean esBisiesto(int unAnho) 
     {
-        // Implementar este método, reemplazando la línea siguiente
-        assert(unAnho >= 1582);
         return ((unAnho%4==0 && unAnho%100==0) || (unAnho%400==0));
     }
     
     private boolean diaValido(int unDia, int unMes, int unAnho)
     {
-        assert(postGregoriano(unDia, unMes, unAnho) == true): "El día debe ser igual o posterior al 15/10/1582.";
-        assert(unDia >= 1 && unDia <= 31): "El dia debe estar entre 1 y 31.";
-        assert(unMes >= 1 && unMes <= 12): "El mes debe estar entre 1 y 12.";
+        if(!postGregoriano(unDia, unMes, unAnho)) throw new IllegalArgumentException("El día debe ser igual o posterior al 15/10/1582.");
+        if(unDia < 1 && unDia > 31) throw new IllegalArgumentException("El dia debe estar entre 1 y 31.");
+        if(unMes < 1 && unMes > 12) throw new IllegalArgumentException("El mes debe estar entre 1 y 12");        
+        
         if (unMes == 2)
         {
             if (unMes == 2 && esBisiesto(unAnho) == true)
@@ -290,16 +290,27 @@ public class Fecha
         return true;
     }
     
+    /**
+     * Chequea si una fecha es post-gregoriana (Mayor a 15/10/1582).
+     * Precondiciones: Que el día esté entre 1 y 31.
+     * Que el mes esté entre 1 y 12.
+     * Que el día corresponda con el límite del mes.
+     * Que si el año es bisiesto, el límite de días del mes dos sea válido.
+     * Que el año sea mayor a cero.
+     */
     private boolean postGregoriano(int unDia, int unMes, int unAnho)
     {
-        if ((unAnho<1582) || (unAnho == 1582 && unMes<10) || (unAnho == 1582 && unMes == 10 && unDia<15))
-        {
-            return false;
+        if(unDia < 1 && unDia > 31) throw new IllegalArgumentException("El dia debe estar entre 1 y 31.");
+        if(unMes < 1 && unMes > 12) throw new IllegalArgumentException("El mes debe estar entre 1 y 12."); 
+        if(unAnho < 0) throw new IllegalArgumentException("El año debe ser mayor a 0.");
+        if(unMes == 2){
+            if(esBisiesto(unAnho)){
+                if(unDia > 29) throw new IllegalArgumentException("El día no puede ser mayor a 29 en el mes 2 de un año bisiesto");
+            }
+            else if(unDia > 28) throw new IllegalArgumentException("El dia no puede ser mayor a 28 en el mes 2");
         }
-        else 
-        {
-            return true;
-        }
+        if(((unMes == 4) || (unMes == 6) || (unMes == 9) || (unMes == 11)) && unDia > 30) throw new IllegalArgumentException("El día no puede ser mayor a 30 en los meses 4, 6, 9 y 11");
+        return (unAnho>=1582) || (unAnho == 1582 && unMes>=10) || (unAnho == 1582 && unMes == 10 && unDia>=15);
     }
     
     public boolean repOK(){
